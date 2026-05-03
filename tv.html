@@ -314,15 +314,23 @@
     }
 
     function applyIframePolicy(server) {
-      player.removeAttribute("sandbox");
-      player.removeAttribute("referrerpolicy");
+    player.removeAttribute("sandbox");
+    player.removeAttribute("referrerpolicy");
 
-      player.setAttribute("allow", "fullscreen; autoplay; picture-in-picture");
+    player.setAttribute("allow", "fullscreen; autoplay; picture-in-picture");
 
-      if (server.referrerPolicy) {
-        player.setAttribute("referrerpolicy", server.referrerPolicy);
-      }
+    if (server.policy?.sandbox) {
+      player.setAttribute("sandbox", server.policy.sandbox);
     }
+
+    if (server.policy?.referrerPolicy) {
+      player.setAttribute("referrerpolicy", server.policy.referrerPolicy);
+    }
+
+    if (server.referrerPolicy) {
+      player.setAttribute("referrerpolicy", server.referrerPolicy);
+    }
+  }
 
     function getStoredTvProgress(id) {
       try {
