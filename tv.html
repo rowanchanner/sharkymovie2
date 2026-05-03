@@ -482,6 +482,8 @@
           episodeSelect.appendChild(option);
 
           selectedEpisode = 1;
+          saveContinueWatching();
+          updateUrlWithoutReload();
           loadServer(activeServer);
           return;
         }
