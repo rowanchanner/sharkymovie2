@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Watch Movie - Sharky Movies 2</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="theme-color" content="#e50914" />
+</head>
+
+<body class="player-page">
+
+  <header class="player-header">
+    <a href="index.html" class="logo">Sharky Movies 2</a>
+    <a href="index.html" class="player-home-link">← Back Home</a>
+  </header>
+
+  <main class="watch-layout">
+
+    <section class="watch-top">
+      <img id="poster" class="watch-poster" src="" alt="Movie poster" />
+
+      <div class="watch-meta">
+        <h1 id="title">Loading...</h1>
+
+        <div class="watch-info-line" id="infoLine">
+          <span>Movie</span>
+          <span>HD</span>
+        </div>
+
+        <p id="desc" class="watch-desc"></p>
+
+        <div class="server-panel">
+          <div class="server-title">Servers</div>
+          <div class="server-buttons" id="serverButtons"></div>
+          <div class="server-note">If one server does not work, choose another one.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="player-container">
+      <div class="player-shell">
+
+        <div class="player-loading" id="playerLoading">
+          <div class="spinner"></div>
+          <div class="loading-text">Loading player...</div>
+        </div>
+
+        <div id="clickShield" class="click-shield" aria-hidden="true">
+          <div class="click-shield-card">
+            <div class="click-shield-title">Press OK / Click to start</div>
+            <div class="click-shield-sub">
+              This helps stop random popups on some servers and helps TV browsers.
+            </div>
+            <button id="clickShieldBtn" class="click-shield-btn" type="button">
+              Start ▶
+            </button>
+          </div>
+        </div>
+
+        <iframe
+          id="player"
+          allowfullscreen
+          allow="fullscreen; autoplay; picture-in-picture"
+        ></iframe>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="player-footer">© 2026 Sharky Movies 2</footer>
+
+  <script>
+    const API_KEY = "47745852f22c21e3362f4907231538e1";
+
+    const params = new URLSearchParams(location.search);
+    const movieId = params.get("id");
+
+    const poster = document.getElementById("poster");
+    const title = document.getElementById("title");
+    const desc = document.getElementById("desc");
+    const infoLine = document.getElementById("infoLine");
+    const serverButtons = document.getElementById("serverButtons");
+    const player = document.getElementById("player");
+    const playerLoading = document.getElementById("playerLoading");
+    const clickShield = document.getElementById("clickShield");
+    const clickShieldBtn = document.getElementById("clickShieldBtn");
+
+    let activeServer = "vidking";
+    let currentMovie = null;
+    let wakeLock = null;
+    let keepAliveTimer = null;
+    let emptyPlayerVisible = false;
+
+    const SERVERS = [
+      {
+        key: "vidking",
+        name: "VidKing",
+        build: (id) => `https://www.vidking.net/embed/movie/${id}?color=e50914`,
+        shield: false,
+        referrerPolicy: "strict-origin-when-cross-origin"
+      },
+      {
+        key: "vsembed",
+        name: "Vidsrc",
+        build: (id) => `https://vsembed.ru/embed/movie/${id}`,
+        shield: true,
+        referrerPolicy: "strict-origin-when-cross-origin"
+      },
+      {
+        key: "vidsrc_embed",
+        name: "Vidsrc V2",
+        build: (id) => `https://vidsrc-embed.ru/embed/movie?tmdb=${encodeURIComponent(id)}`,
+        shield: true,
+        referrerPolicy: "strict-origin-when-cross-origin"
+      },
+      {
+        key: "vidfast",
+        name: "VidFast",
+        build: (id) => `https://vidfast.pro/movie/${id}`,
+        shield: true,
+        referrerPolicy: "strict-origin-when-cross-origin"
+      },
+      {
+        key: "vidup",
+        name: "VidUp",
+        build: (id) => `https://vidup.to/movie/${id}?theme=FF0000`,
+        shield: true,
+        referrerPolicy: "strict-origin-when-cross-origin"
+      },
+      {
+        key: "2embed",
+        name: "2Embed",
+        build: (id) => `https://www.2embed.cc/embed/${id}`,
+        shield: true,
+        referrerPolicy: "strict-origin-when-cross-origin"
+      },
+      {
+        key: "videasy",
+        name: "Videasy",
+        build: (id) => `https://player.videasy.net/movie/${id}`,
+        shield: true,
+        referrerPolicy: "strict-origin-when-cross-origin"
+      },
+      {
+        key: "vidrock",
+        name: "VidRock",
+        build: (id) => `https://vidrock.net/movie/${id}`,
+        shield: true,
+        referrerPolicy: "strict-origin-when-cross-origin"
+      }
+    ];
+
+    function showLoading(on) {
+      playerLoading.style.display = on ? "flex" : "none";
+    }
+
+    function showShield(on) {
+      clickShield.classList.toggle("show", !!on);
+      clickShield.setAttribute("aria-hidden", on ? "false" : "true");
+
+      if (on) {
+        setTimeout(() => clickShieldBtn.focus(), 0);
+      }
+    }
+
+    function disarmShield() {
+      showShield(false);
+      startPlaybackPower();
+
+      try {
+        player.focus();
+      } catch {}
+    }
+
+    clickShieldBtn.addEventListener("click", disarmShield);
+
+    clickShield.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      disarmShield();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (!clickShield.classList.contains("show")) return;
+
+      if (e.key === "Enter" || e.key === " " || e.key === "OK") {
+        e.preventDefault();
+        disarmShield();
+      }
+    });
+
+    async function requestWakeLock() {
+      try {
+        if (!("wakeLock" in navigator)) return;
+        if (wakeLock) return;
+
+        wakeLock = await navigator.wakeLock.request("screen");
+      } catch {}
+    }
+
+    async function releaseWakeLock() {
+      try {
+        if (wakeLock) {
+          await wakeLock.release();
+          wakeLock = null;
+        }
+      } catch {}
+    }
+
+    function startKeepAlive() {
+      stopKeepAlive();
+
+      keepAliveTimer = setInterval(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 60000);
+    }
+
+    function stopKeepAlive() {
+      if (keepAliveTimer) clearInterval(keepAliveTimer);
+      keepAliveTimer = null;
+    }
+
+    function startPlaybackPower() {
+      requestWakeLock();
+      startKeepAlive();
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        requestWakeLock();
+      } else {
+        releaseWakeLock();
+      }
+    });
+
+    window.addEventListener("pagehide", () => {
+      stopKeepAlive();
+      releaseWakeLock();
+    });
+
+    window.addEventListener("beforeunload", () => {
+      stopKeepAlive();
+      releaseWakeLock();
+    });
+
+    function removeEmptyPlayer() {
+      const oldEmpty = document.getElementById("emptyPlayer");
+      if (oldEmpty) oldEmpty.remove();
+      emptyPlayerVisible = false;
+    }
+
+    function showEmptyPlayer(message) {
+      removeEmptyPlayer();
+
+      player.insertAdjacentHTML("afterend", `
+        <div class="empty-player" id="emptyPlayer">
+          <div>
+            <h2>Player not connected</h2>
+            <p>${message}</p>
+          </div>
+        </div>
+      `);
+
+      emptyPlayerVisible = true;
+    }
+
+    function applyIframePolicy(server) {
+      player.removeAttribute("sandbox");
+      player.removeAttribute("referrerpolicy");
+
+      player.setAttribute("allow", "fullscreen; autoplay; picture-in-picture");
+
+      if (server.referrerPolicy) {
+        player.setAttribute("referrerpolicy", server.referrerPolicy);
+      }
+    }
+
+    function renderServers() {
+      serverButtons.innerHTML = "";
+
+      SERVERS.forEach((server) => {
+        const btn = document.createElement("button");
+        btn.className = "server-btn";
+        btn.textContent = server.name;
+        btn.dataset.server = server.key;
+
+        btn.addEventListener("click", () => loadServer(server.key));
+
+        serverButtons.appendChild(btn);
+      });
+
+      setActiveServerButton();
+    }
+
+    function setActiveServerButton() {
+      document.querySelectorAll(".server-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.server === activeServer);
+      });
+    }
+
+    function loadServer(serverKey) {
+      const server = SERVERS.find((s) => s.key === serverKey);
+      if (!server || !movieId) return;
+
+      activeServer = serverKey;
+      setActiveServerButton();
+
+      showLoading(true);
+      showShield(!!server.shield);
+      removeEmptyPlayer();
+      applyIframePolicy(server);
+
+      player.src = "about:blank";
+
+      setTimeout(() => {
+        const url = server.build(movieId);
+
+        if (!url) {
+          showLoading(false);
+          showEmptyPlayer("This server does not have a valid player URL.");
+          return;
+        }
+
+        player.src = url;
+      }, 80);
+    }
+
+    player.addEventListener("load", () => {
+      setTimeout(() => showLoading(false), 350);
+    });
+
+    function saveContinueWatching(movie) {
+      const key = "sharky_movies_2_continue_watching";
+
+      let list = [];
+
+      try {
+        list = JSON.parse(localStorage.getItem(key)) || [];
+      } catch {
+        list = [];
+      }
+
+      const item = {
+        id: movie.id,
+        media_type: "movie",
+        sharky_title: movie.title,
+        sharky_date: movie.release_date || "",
+        poster_path: movie.poster_path,
+        backdrop_path: movie.backdrop_path,
+        vote_average: movie.vote_average,
+        overview: movie.overview,
+        lastWatched: Date.now()
+      };
+
+      const filtered = list.filter((x) => {
+        return !(Number(x.id) === Number(movie.id) && x.media_type === "movie");
+      });
+
+      localStorage.setItem(key, JSON.stringify([item, ...filtered].slice(0, 20)));
+    }
+
+    async function loadMovieDetails() {
+      if (!movieId) {
+        title.textContent = "No movie selected.";
+        desc.textContent = "Go back to the homepage and choose a movie.";
+        showLoading(false);
+        showShield(false);
+        showEmptyPlayer("No TMDB movie ID was provided in the URL.");
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/movie/${movieId}?api_key=${API_KEY}&language=en-US`
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to load movie.");
+        }
+
+        const movie = await res.json();
+        currentMovie = movie;
+
+        const year = movie.release_date ? movie.release_date.slice(0, 4) : "N/A";
+        const rating = movie.vote_average ? Number(movie.vote_average).toFixed(1) : "N/A";
+        const runtime = movie.runtime
+          ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`
+          : "Runtime unknown";
+
+        title.textContent = `${movie.title || "Untitled"} ${year !== "N/A" ? `(${year})` : ""}`;
+        desc.textContent = movie.overview || "No overview available.";
+
+        poster.src = movie.poster_path
+          ? "https://image.tmdb.org/t/p/w500" + movie.poster_path
+          : "https://via.placeholder.com/500x750/111111/ffffff?text=No+Poster";
+
+        infoLine.innerHTML = `
+          <span>Movie</span>
+          <span>${year}</span>
+          <span>HD</span>
+          <span>★ ${rating}</span>
+          <span>${runtime}</span>
+        `;
+
+        document.title = `Watch ${movie.title || "Movie"} - Sharky Movies 2`;
+
+        saveContinueWatching(movie);
+        loadServer(activeServer);
+      } catch (error) {
+        console.error(error);
+
+        title.textContent = "Failed to load movie.";
+        desc.textContent = "Try going back and opening the movie again.";
+
+        showLoading(false);
+        showShield(false);
+        showEmptyPlayer("Movie details could not be loaded.");
+      }
+    }
+
+    renderServers();
+    loadMovieDetails();
+  </script>
+</body>
+</html>
