@@ -114,19 +114,64 @@
     const STORAGE_TV_PROGRESS = "sharky_movies_2_tv_progress";
 
     const SERVERS = [
-      {
-        key: "default",
-        name: "Main Player",
-        shield: true,
-        referrerPolicy: "strict-origin-when-cross-origin"
-      },
-      {
-        key: "backup",
-        name: "Backup Player",
-        shield: true,
-        referrerPolicy: "strict-origin-when-cross-origin"
-      }
-    ];
+  {
+    key: "vidking",
+    name: "VidKing (ads)",
+    build: (id, s, e) =>
+      `https://www.vidking.net/embed/tv/${id}/${s}/${e}?color=e50914&nextEpisode=true&episodeSelector=true`,
+    policy: {
+      referrerPolicy: "strict-origin-when-cross-origin",
+    },
+    shield: false,
+  },
+  {
+    key: "vidsrc",
+    name: "Vidsrc (ads)",
+    build: (id, s, e) =>
+      `https://vidsrc-embed.ru/embed/tv/${id}/${s}/${e}`,
+    policy: {
+      referrerPolicy: "strict-origin-when-cross-origin",
+    },
+    shield: true,
+  },
+
+  // ✅ Your new TV servers
+  {
+    key: "vidrock_tv",
+    name: "VidRock (ads)",
+    urlTemplate: "https://vidrock.net/tv/{id}/{season}/{episode}",
+    policy: { referrerPolicy: "strict-origin-when-cross-origin" },
+    shield: true,
+  },
+  {
+    key: "videasy_tv",
+    name: "Videasy (ads)",
+    urlTemplate: "https://player.videasy.net/tv/{id}/{season}/{episode}",
+    policy: { referrerPolicy: "strict-origin-when-cross-origin" },
+    shield: true,
+  },
+  {
+    key: "2embed_tv",
+    name: "2Embed (ads)",
+    urlTemplate: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}",
+    policy: { referrerPolicy: "strict-origin-when-cross-origin" },
+    shield: true,
+  },
+  {
+    key: "vidup_tv",
+    name: "VidUp (ads)",
+    urlTemplate: "https://vidup.to/tv/{id}/{season}/{episode}?autoPlay=true",
+    policy: { referrerPolicy: "strict-origin-when-cross-origin" },
+    shield: true,
+  },
+  {
+    key: "vidfast_tv",
+    name: "VidFast (ads)",
+    urlTemplate: "https://vidfast.pro/tv/{id}/{season}/{episode}?autoPlay=true",
+    policy: { referrerPolicy: "strict-origin-when-cross-origin" },
+    shield: true,
+  },
+];
 
     /*
       Add your own legal TV player provider here.
