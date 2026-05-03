@@ -279,7 +279,10 @@ function playItem(item) {
   saveContinueWatching(item);
 
   if (item.media_type === "tv") {
-    window.location.href = `tv.html?id=${encodeURIComponent(item.id)}`;
+    const season = item.season || 1;
+    const episode = item.episode || 1;
+
+    window.location.href = `tv.html?id=${encodeURIComponent(item.id)}&s=${encodeURIComponent(season)}&e=${encodeURIComponent(episode)}`;
   } else {
     window.location.href = `movie.html?id=${encodeURIComponent(item.id)}`;
   }
