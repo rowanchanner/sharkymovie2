@@ -3,43 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sharky Movies 2 - Watch Movies Online</title>
+
+  <title>Sharky Movies 2</title>
 
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="theme-color" content="#e50914" />
 </head>
+
 <body>
 
-  <!-- HEADER / NAVBAR -->
   <header class="navbar" id="navbar">
     <div class="nav-left">
-      <a href="#" class="logo">Sharky Movies 2</a>
+      <a href="index.html" class="logo">Sharky Movies 2</a>
 
       <nav class="nav-links">
-        <button class="nav-link active" data-section="home">Home</button>
-        <button class="nav-link" data-section="movies">Movies</button>
-        <button class="nav-link" data-section="tv">TV Shows</button>
-        <button class="nav-link" data-section="trending">Trending</button>
-        <button class="nav-link" data-section="mylist">My List</button>
+        <button class="nav-link active" data-jump="home">Home</button>
+        <button class="nav-link" data-jump="movies">Movies</button>
+        <button class="nav-link" data-jump="tv">TV Shows</button>
+        <button class="nav-link" data-jump="continue">Continue Watching</button>
+        <button class="nav-link" data-jump="mylist">My List</button>
       </nav>
     </div>
 
     <div class="nav-right">
       <div class="search-wrap">
         <span class="search-icon">⌕</span>
-        <input
-          type="text"
-          class="search-bar"
-          placeholder="Search movies..."
-          id="searchInput"
-          autocomplete="off"
-        />
+        <input id="searchInput" class="search-bar" type="text" placeholder="Search movies or TV..." />
       </div>
 
       <div class="profile-icon">S</div>
     </div>
   </header>
 
-  <!-- HERO -->
   <section class="hero" id="heroBanner">
     <div class="hero-overlay"></div>
 
@@ -49,90 +45,101 @@
       <h1 id="heroTitle">Loading...</h1>
 
       <div class="hero-meta" id="heroMeta">
-        <span>Movie</span>
         <span>HD</span>
-        <span>Loading...</span>
+        <span>Movie</span>
       </div>
 
-      <p id="heroDesc">
-        Watch the best movies from around the world.
-      </p>
+      <p id="heroDesc">Loading Sharky Movies 2...</p>
 
       <div class="hero-actions">
-        <button class="btn btn-play" id="heroPlayBtn" style="display:none;">
-          ▶ Play
-        </button>
-
-        <button class="btn btn-secondary" id="heroListBtn" style="display:none;">
-          + My List
-        </button>
+        <button class="btn btn-play" id="heroPlayBtn">▶ Play</button>
+        <button class="btn btn-secondary" id="heroListBtn">+ My List</button>
       </div>
     </div>
   </section>
 
-  <!-- MAIN CONTENT -->
   <main class="page-content">
 
-    <!-- SEARCH RESULTS -->
     <section class="movie-section hidden" id="searchSection">
       <div class="section-header">
         <h2 id="searchTitle">Search Results</h2>
-        <button class="clear-search" id="clearSearchBtn">Clear Search</button>
+        <button class="clear-search" id="clearSearchBtn">Clear</button>
       </div>
 
       <div class="search-grid" id="searchGrid"></div>
     </section>
 
-    <!-- MOVIE ROWS -->
     <section class="movie-section" id="rowsSection">
 
-      <div class="movie-row-block">
+      <div class="movie-row-block hidden" id="continueBlock">
         <div class="section-header">
-          <h2>Trending Now</h2>
+          <h2>Continue Watching</h2>
+          <button class="clear-search" id="clearContinueBtn">Clear</button>
         </div>
-        <div class="movie-row" id="trendingRow"></div>
+        <div class="movie-row" id="continueRow"></div>
+      </div>
+
+      <div class="movie-row-block" id="moviesBlock">
+        <div class="section-header">
+          <h2>Trending Movies</h2>
+        </div>
+        <div class="movie-row" id="trendingMoviesRow"></div>
       </div>
 
       <div class="movie-row-block">
         <div class="section-header">
           <h2>Popular Movies</h2>
         </div>
-        <div class="movie-row" id="popularRow"></div>
+        <div class="movie-row" id="popularMoviesRow"></div>
       </div>
 
       <div class="movie-row-block">
         <div class="section-header">
-          <h2>Top Rated</h2>
+          <h2>Top Rated Movies</h2>
         </div>
-        <div class="movie-row" id="topRatedRow"></div>
+        <div class="movie-row" id="topMoviesRow"></div>
+      </div>
+
+      <div class="movie-row-block" id="tvBlock">
+        <div class="section-header">
+          <h2>Trending TV Shows</h2>
+        </div>
+        <div class="movie-row" id="trendingTvRow"></div>
       </div>
 
       <div class="movie-row-block">
         <div class="section-header">
-          <h2>Action</h2>
+          <h2>Popular TV Shows</h2>
+        </div>
+        <div class="movie-row" id="popularTvRow"></div>
+      </div>
+
+      <div class="movie-row-block">
+        <div class="section-header">
+          <h2>Top Rated TV Shows</h2>
+        </div>
+        <div class="movie-row" id="topTvRow"></div>
+      </div>
+
+      <div class="movie-row-block">
+        <div class="section-header">
+          <h2>Action Movies</h2>
         </div>
         <div class="movie-row" id="actionRow"></div>
       </div>
 
       <div class="movie-row-block">
         <div class="section-header">
-          <h2>Horror</h2>
+          <h2>Horror Movies</h2>
         </div>
         <div class="movie-row" id="horrorRow"></div>
       </div>
 
       <div class="movie-row-block">
         <div class="section-header">
-          <h2>Comedy</h2>
+          <h2>Comedy Movies</h2>
         </div>
         <div class="movie-row" id="comedyRow"></div>
-      </div>
-
-      <div class="movie-row-block">
-        <div class="section-header">
-          <h2>Recently Added</h2>
-        </div>
-        <div class="movie-row" id="recentRow"></div>
       </div>
 
       <div class="movie-row-block hidden" id="myListBlock">
@@ -145,7 +152,6 @@
     </section>
   </main>
 
-  <!-- DETAILS MODAL -->
   <div class="details-modal" id="detailsModal">
     <div class="details-backdrop" id="detailsBackdrop"></div>
 
@@ -156,15 +162,13 @@
         <div class="details-gradient"></div>
 
         <div class="details-hero-content">
-          <h2 id="detailsTitle">Movie Title</h2>
+          <div class="hero-tag" id="detailsTypeTag">Movie</div>
+          <h2 id="detailsTitle">Title</h2>
 
-          <div class="details-meta" id="detailsMeta">
-            <span>HD</span>
-            <span>Movie</span>
-          </div>
+          <div class="details-meta" id="detailsMeta"></div>
 
           <div class="details-buttons">
-            <button class="btn btn-play" id="detailsPlayBtn">▶ Play Movie</button>
+            <button class="btn btn-play" id="detailsPlayBtn">▶ Play</button>
             <button class="btn btn-secondary" id="detailsTrailerBtn">Trailer</button>
             <button class="btn btn-secondary" id="detailsListBtn">+ My List</button>
           </div>
@@ -173,38 +177,14 @@
 
       <div class="details-body">
         <div class="details-poster-wrap">
-          <img id="detailsPoster" src="" alt="Movie poster" />
+          <img id="detailsPoster" src="" alt="Poster" />
         </div>
 
         <div class="details-text">
-          <p id="detailsOverview">Overview loading...</p>
+          <p id="detailsOverview">Loading...</p>
           <p class="details-extra" id="detailsExtra"></p>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- PLAYER MODAL -->
-  <div class="player-modal" id="playerModal">
-    <button class="modal-close player-close" id="playerCloseBtn">&times;</button>
-
-    <div class="player-box">
-      <h2 id="playerTitle">Movie Title</h2>
-
-      <div class="player-placeholder" id="playerPlaceholder">
-        <h3>Player not connected yet</h3>
-        <p>
-          Add your own legal movie embed provider inside
-          <strong>getMovieEmbedUrl()</strong> in <strong>script2.js</strong>.
-        </p>
-      </div>
-
-      <iframe
-        id="videoPlayer"
-        src=""
-        allowfullscreen
-        style="display:none;"
-      ></iframe>
     </div>
   </div>
 
