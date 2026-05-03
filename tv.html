@@ -103,7 +103,7 @@
     const clickShield = document.getElementById("clickShield");
     const clickShieldBtn = document.getElementById("clickShieldBtn");
 
-    let activeServer = "default";
+    let activeServer = "vidking";
     let currentShow = null;
     let selectedSeason = urlSeason;
     let selectedEpisode = urlEpisode;
@@ -188,8 +188,20 @@
       Leave empty for now if you only want the UI ready.
     */
     function getTvEmbedUrl(server, id, season, episode) {
-      return "";
+      if (typeof server.build === "function") {
+        return server.build(id, season, episode);
+      }
+
+      if (server.urlTemplate && typeof server.urlTemplate === "string") {
+        return server.urlTemplate
+        .replaceAll("{id}", encodeURIComponent(id))
+        .replaceAll("{season}", encodeURIComponent(season))
+        .replaceAll("{episode}", encodeURIComponent(episode));
     }
+
+    return "";
+  }
+    
 
     function showLoading(on) {
       playerLoading.style.display = on ? "flex" : "none";
